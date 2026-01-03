@@ -1,717 +1,157 @@
 <!DOCTYPE html>
 <html lang="ar">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>توصيلاتي</title>
-
-<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
-
-<style>
-:root{
-  --green:#12b886; --green-dark:#0f9a72; --bg1:#eafaf1; --bg2:#d7f2e4; --text:#122; --muted:#5b6b6b; --card:#ffffffcc;
-}
-*{box-sizing:border-box}
-html,body{height:100%}
-body{
-  margin:0; font-family:"Segoe UI", Tahoma, Arial, sans-serif;
-  background: linear-gradient(135deg,var(--bg1), var(--bg2));
-  color:var(--text); direction:rtl; display:flex; flex-direction:column;
-}
-header{
-  background:var(--green); color:#fff; padding:16px 20px; display:flex; align-items:center; justify-content:space-between;
-  box-shadow:0 2px 10px rgba(0,0,0,0.1);
-}
-.brand{display:flex; align-items:center; gap:10px; font-weight:bold; font-size:20px}
-.header-actions{display:flex; gap:8px}
-header button{border:none; background:#fff; color:var(--green); border-radius:8px; padding:8px 12px; cursor:pointer; font-weight:600}
-header button:hover{background:#f3fef8}
-.main{display:grid; grid-template-columns: 380px 1fr; gap:16px; padding:16px; flex:1}
-@media (max-width: 960px){ .main{grid-template-columns: 1fr} }
-.card{
-  background:var(--card); backdrop-filter:blur(10px); border-radius:14px; box-shadow:0 8px 20px rgba(0,0,0,0.08);
-  padding:16px; transition:transform .25s ease, opacity .25s ease;
-}
-.card h3{margin:0 0 10px 0}
-.muted{color:var(--muted); font-size:14px}
-button.primary{
-  width:100%; padding:12px; border:none; border-radius:10px; background:var(--green); color:#fff; font-size:16px; cursor:pointer;
-  transition:transform .2s ease, background .2s ease;
-}
-button.primary:hover{background:var(--green-dark); transform:scale(1.02)}
-button.ghost{width:100%; padding:12px; border:2px solid var(--green); border-radius:10px; color:var(--green); background:transparent; cursor:pointer}
-.input{display:flex; flex-direction:column; gap:6px; margin-bottom:10px}
-.input label{font-size:14px; color:#244}
-.input input, .input select{padding:10px; border:1px solid #cfd8d8; border-radius:10px; font-size:15px; background:#fff}
-.row{display:flex; gap:10px}
-.row > *{flex:1}
-#map{width:100%; height:100%; min-height:420px; border-radius:14px; box-shadow:0 8px 20px rgba(0,0,0,0.08)}
-.modal{position:fixed; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.25); z-index:1000; padding:16px}
-.modal .window{
-  max-width:720px; width:100%; background:var(--card); backdrop-filter:blur(12px); border-radius:16px; padding:22px;
-  box-shadow:0 10px 28px rgba(0,0,0,0.15); animation:pop .25s ease;
-}
-@keyframes pop{from{transform:scale(.98); opacity:0} to{transform:scale(1); opacity:1}}
-.actions{display:flex; gap:10px; margin-top:12px}
-.offer{border:1px solid #e5efef; border-radius:12px; padding:12px; margin-bottom:10px; background:#fff}
-.offer-header{display:flex; justify-content:space-between; align-items:center}
-.badge{background:#effaf5; color:var(--green-dark); padding:4px 8px; border-radius:999px; font-size:12px; font-weight:600}
-.tags{display:flex; gap:6px; flex-wrap:wrap; margin-top:8px}
-.tag{background:#f2fbf7; color:#285; padding:4px 8px; border-radius:999px; font-size:12px}
-.offer-actions{display:flex; gap:8px; margin-top:10px}
-button.sm{padding:8px 10px; border:none; border-radius:8px; cursor:pointer}
-button.accept{background:var(--green); color:#fff}
-button.reject{background:#f44336; color:#fff}
-.chat{border:1px solid #e5efef; border-radius:12px; padding:10px; background:#fff; max-height:220px; overflow:auto}
-.chat-msg{margin-bottom:8px}
-.chat-meta{font-size:12px; color:#666}
-.hidden{display:none}
-.success{color:#1b8a5a} .error{color:#c62828}
-.preview{display:flex; gap:8px; flex-wrap:wrap}
-.preview img{width:84px; height:84px; object-fit:cover; border-radius:10px; border:1px solid #e5efef}
-#recaptcha-container{margin-top:8px}
-</style>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>🚗 توصيلاتي</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+  <style>
+    :root{--emerald:#2ecc71;--midnight:#2c3e50;--bg:#ecf0f1;--accent:#e67e22;}
+    body{margin:0;font-family:"Inter",sans-serif;background:var(--bg);direction:rtl}
+    .header{background:var(--midnight);color:#fff;padding:12px;display:flex;justify-content:space-between}
+    .brand{font-weight:bold}
+    .btn{border:none;border-radius:8px;padding:8px 12px;cursor:pointer}
+    .btn.primary{background:var(--emerald);color:#fff}
+    .container{padding:16px}
+    .grid{display:grid;grid-template-columns:1fr 300px;gap:16px}
+    .card{background:#fff;border-radius:12px;padding:16px;box-shadow:0 4px 12px rgba(0,0,0,.1)}
+    .input{margin-bottom:10px;display:flex;flex-direction:column}
+    .chat{border:1px solid #ddd;border-radius:8px;padding:8px;max-height:200px;overflow:auto}
+    #map{height:220px;border-radius:12px}
+    .login-hero{display:flex;align-items:center;justify-content:center;height:100vh;background:linear-gradient(135deg,#2ecc71,#2c3e50)}
+    .login-card{background:#fff;padding:20px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.1)}
+    .muted{color:#6b7280;font-size:14px}
+  </style>
 </head>
 <body>
 
-<header>
-  <div class="brand">🚗 توصيلاتي</div>
-  <div class="header-actions">
-    <button id="btnRoleCustomer" class="hidden">واجهة الزبون</button>
-    <button id="btnRoleDriver" class="hidden">واجهة السائق</button>
-    <button id="btnLogout" class="hidden">تسجيل الخروج</button>
-  </div>
-</header>
-
-<div class="main">
-  <!-- Left column: Controls -->
-  <div class="card" id="panelControls">
-    <h3>لوحة التحكم</h3>
-    <p class="muted">اختر دورك، حدّد موقعك، وانشر أو احجز الرحلات بسهولة.</p>
-
-    <!-- Role selection -->
-    <div id="roleSelect" class="actions">
-      <button class="primary" onclick="openLogin('customer')">دخول كزبون</button>
-      <button class="ghost" onclick="openLogin('driver')">دخول كسائق</button>
-    </div>
-
-    <!-- Driver setup -->
-    <div id="driverSetup" class="hidden">
-      <h3>بيانات السائق والمركبة</h3>
-      <div class="input"><label>الاسم الكامل</label><input id="drvName" placeholder="مثال: أحمد خالد"/></div>
-      <div class="row">
-        <div class="input"><label>رقم الهاتف (الأردن)</label><input id="drvPhone" placeholder="+9627XXXXXXXX"/></div>
-        <div class="input"><label>العمر</label><input id="drvAge" type="number" min="18" placeholder="العمر"/></div>
-      </div>
-      <div class="row">
-        <div class="input"><label>الجنس</label>
-          <select id="drvGender"><option>ذكر</option><option>أنثى</option></select>
-        </div>
-        <div class="input"><label>التقييم</label><input id="drvRating" type="number" step="0.1" min="0" max="5" placeholder="4.8"/></div>
-      </div>
-
-      <div class="row">
-        <div class="input"><label>رقم المركبة</label><input id="carNumber" placeholder="رقم اللوحة"/></div>
-        <div class="input"><label>لون المركبة</label><input id="carColor" placeholder="أبيض، أسود..."/></div>
-      </div>
-      <div class="row">
-        <div class="input"><label>اسم المركبة</label><input id="carBrand" placeholder="تويوتا، هوندا..."/></div>
-        <div class="input"><label>نوع/موديل المركبة</label><input id="carModel" placeholder="كورولا، سيفيك..."/></div>
-      </div>
-
-      <div class="input">
-        <label>صور المركبة</label>
-        <input id="carPhotos" type="file" multiple accept="image/*"/>
-        <div id="photoPreview" class="preview"></div>
-      </div>
-
-      <div class="input">
-        <label><input type="checkbox" id="shareLocConsent"/> أوافق على مشاركة موقعي</label>
-      </div>
-
-      <button class="primary" onclick="saveDriverProfile()">حفظ الملف</button>
-      <p id="drvSaveStatus" class="muted"></p>
-
-      <hr/>
-
-      <h3>نشر عرض رحلة</h3>
-      <div class="row">
-        <div class="input"><label>من</label><select id="fromRegion"></select></div>
-        <div class="input"><label>إلى</label><select id="toRegion"></select></div>
-      </div>
-      <div class="row">
-        <div class="input"><label>السعر (دينار)</label><input id="offerPrice" type="number" min="0" step="0.5"/></div>
-        <div class="input"><label>عدد المقاعد</label><input id="offerSeats" type="number" min="1"/></div>
-      </div>
-      <div class="row">
-        <div class="input"><label>موعد الانطلاق</label><input id="offerTime" type="datetime-local"/></div>
-        <div class="input"><label>ملاحظات</label><input id="offerNotes" placeholder="تفاصيل إضافية"/></div>
-      </div>
-
-      <button class="primary" onclick="publishOffer()">نشر العرض</button>
-      <p id="offerStatus" class="muted"></p>
-
-      <hr/>
-
-      <h3>طلبات الزبائن</h3>
-      <div id="driverRequests"></div>
-    </div>
-
-    <!-- Customer view -->
-    <div id="customerView" class="hidden">
-      <h3>عروض السائقين</h3>
-      <div class="row">
-        <div class="input"><label>من</label><select id="filterFrom"></select></div>
-        <div class="input"><label>إلى</label><select id="filterTo"></select></div>
-      </div>
-      <div class="row">
-        <button class="primary" onclick="applyFilters()">تصفية</button>
-        <button class="ghost" onclick="clearFilters()">إلغاء التصفية</button>
-      </div>
-
-      <div id="offersList" style="margin-top:10px;"></div>
-
-      <hr/>
-      <h3>حجز لاحق (موعد محدد)</h3>
-      <div class="row">
-        <div class="input"><label>عدد المقاعد المطلوبة</label><input id="lateSeats" type="number" min="1" value="1"/></div>
-        <div class="input"><label>ملاحظة</label><input id="lateNote" placeholder="مثال: حقيبة كبيرة"/></div>
-      </div>
-      <p class="muted">اختر عرضاً من القائمة ثم اضغط "اختيار" ثم "حجز".</p>
-    </div>
-  </div>
-
-  <!-- Right column: Map & chat -->
-  <div class="card">
-    <h3>الخريطة الحية</h3>
-    <p class="muted">تظهر هنا مواقعك ومواقع الرحلات. يسمح السائق برفض الطلب إن كان الزبون أبعد من ٦ كم.</p>
-    <div id="map"></div>
-
-    <hr/>
-    <h3>مجموعة محادثة الرحلة</h3>
-    <div id="chatBox" class="chat"></div>
-    <div class="row">
-      <input id="chatInput" placeholder="اكتب رسالة للمجموعة..."/>
-      <button class="primary" onclick="sendChat()">إرسال</button>
-    </div>
-  </div>
-</div>
-
-<!-- Welcome modal -->
-<div class="modal" id="welcomeModal">
-  <div class="window">
-    <h2 style="margin-top:0;">مرحباً بك في <span style="color:var(--green)">توصيلاتي</span></h2>
-    <p id="welcomeQuote" class="muted" style="font-size:16px;"></p>
-    <div class="actions">
-      <button class="primary" onclick="openLogin('customer')">دخول كزبون</button>
-      <button class="ghost" onclick="openLogin('driver')">دخول كسائق</button>
-    </div>
-  </div>
-</div>
-
-<!-- Login modal -->
-<div class="modal hidden" id="loginModal">
-  <div class="window">
-    <h3 id="loginTitle">تسجيل الدخول</h3>
-    <div class="row">
-      <div class="input"><label>الاسم الكامل</label><input id="loginName" placeholder="مثال: محمد علي"/></div>
-      <div class="input"><label>رقم الهاتف (الأردن)</label><input id="loginPhone" placeholder="+9627XXXXXXXX"/></div>
-    </div>
+<!-- LOGIN PAGE -->
+<div id="loginPage" class="login-hero">
+  <div class="login-card">
+    <h2>🚗 توصيلاتي</h2>
+    <p class="muted">أدخل رقمك الأردني للتحقق عبر SMS</p>
+    <div class="input"><label>الاسم الكامل</label><input id="loginName"/></div>
+    <div class="input"><label>رقم الهاتف</label><input id="loginPhone" placeholder="+9627XXXXXXXX"/></div>
     <div class="input"><label><input type="checkbox" id="loginConsent"/> أوافق على مشاركة موقعي</label></div>
     <div id="recaptcha-container"></div>
-    <div class="row">
-      <button class="primary" onclick="sendVerification()">إرسال رمز التحقق</button>
-      <div class="input" style="flex:2"><label>رمز التحقق</label><input id="loginCode" placeholder="أدخل الرمز"/></div>
-    </div>
-    <div class="actions">
-      <button class="primary" onclick="completeLogin()">إكمال الدخول</button>
-      <button class="ghost" onclick="closeLogin()">إلغاء</button>
-    </div>
+    <div class="input"><label>رمز التحقق</label><input id="loginCode"/></div>
+    <button class="btn primary" onclick="sendVerification()">إرسال رمز</button>
+    <button class="btn primary" onclick="completeLogin()">إكمال الدخول</button>
     <p id="loginStatus" class="muted"></p>
   </div>
 </div>
 
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<!-- MAIN APP -->
+<div id="homePage" style="display:none">
+  <header class="header">
+    <div class="brand">🚗 توصيلاتي</div>
+    <button id="btnLogout" class="btn">خروج</button>
+  </header>
+  <main class="container grid">
+    <div class="card">
+      <h2>ابحث عن سائق</h2>
+      <div id="offersList"></div>
+      <hr/>
+      <h2>حجز مقاعد (حجب رحلة)</h2>
+      <div id="blocksList"></div>
+      <hr/>
+      <h3>محادثة الرحلة</h3>
+      <div id="chatBox" class="chat"></div>
+      <div class="row">
+        <input id="chatInput" placeholder="اكتب رسالة..."/>
+        <button class="btn primary" onclick="sendChat()">إرسال</button>
+      </div>
+    </div>
+    <div class="card">
+      <h3>الخريطة</h3>
+      <div id="map"></div>
+    </div>
+  </main>
+</div>
 
-<!-- Firebase v10 compat SDKs (simplifies usage in single file) -->
+<!-- Scripts -->
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-storage-compat.js"></script>
 
 <script>
-/* Firebase config (provided) */
-const firebaseConfig = {
-  apiKey: "AIzaSyDQtw1wHvarCO9WS3E-HVafkBWEkimnWfI",
-  authDomain: "tawsilati-f175e.firebaseapp.com",
-  projectId: "tawsilati-f175e",
-  storageBucket: "tawsilati-f175e.firebasestorage.app",
-  messagingSenderId: "181685598480",
-  appId: "1:181685598480:web:3f712bf3252b6660dccd95",
-  measurementId: "G-FVY6YCKREP"
-};
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
-const storage = firebase.storage();
-
-/* Quotes */
-const quotes = [
-  "🚗 توصيلاتي... رحلتك تبدأ من هنا",
-  "مع توصيلاتي، الطريق أسهل وأقرب",
-  "اختر رحلتك بثقة وسهولة",
-  "توصيلاتي... حيث يلتقي السائق بالزبون",
-  "رحلات آمنة وسهلة في الأردن"
-];
-
-/* Regions */
-const REGIONS = ["اربدّ","الكورة","الحي الشمالي","الحي الجنوبي","كفر يوبا","الطيبة","عمان","الزرقاء","العقبة"];
-
-/* State */
-let role = null;
-let map, userMarker;
-let watchId = null;
-let currentUser = null; // {uid, name, phone, consent, role}
-let selectedOfferId = null;
-let recaptchaVerifier = null;
-
-/* Utils */
-const $ = id => document.getElementById(id);
-function fmt(n){ return Number(n).toLocaleString("ar-JO"); }
-function validateJordanPhone(p){ return /^\+9627\d{8}$/.test((p||"").trim()); }
-function haversineKm(aLat,aLng,bLat,bLng){
-  const toRad = d=>d*Math.PI/180, R=6371;
-  const dLat=toRad(bLat-aLat), dLng=toRad(bLng-aLng);
-  const s1=Math.sin(dLat/2)**2;
-  const s2=Math.sin(dLng/2)**2*Math.cos(toRad(aLat))*Math.cos(toRad(bLat));
-  return 2*R*Math.asin(Math.sqrt(s1+s2));
-}
-
-/* Welcome quotes rotation */
-(function rotateQuotes(){
-  let i=0; const el=$("welcomeQuote");
-  el.textContent=quotes[i];
-  setInterval(()=>{ i=(i+1)%quotes.length; el.textContent=quotes[i]; }, 3000);
-})();
-
-/* Populate region selects */
-function populateRegions(){
-  ["fromRegion","toRegion","filterFrom","filterTo"].forEach(id=>{
-    const sel=$(id); sel.innerHTML="";
-    const optAny = document.createElement("option");
-    optAny.value=""; optAny.textContent = id.includes("filter") ? "الكل" : "اختر";
-    sel.appendChild(optAny);
-    REGIONS.forEach(r=>{
-      const o=document.createElement("option");
-      o.value=r; o.textContent=r; sel.appendChild(o);
-    });
-  });
-}
-populateRegions();
-
-/* Map init */
-function initMap(){
-  map = L.map("map").setView([31.95,35.91], 12);
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"© OpenStreetMap"}).addTo(map);
-  window.addEventListener("resize", ()=>map.invalidateSize());
-}
-initMap();
-
-/* Geolocation */
-function startLocationWatch(){
-  if(!navigator.geolocation) return;
-  if(watchId) navigator.geolocation.clearWatch(watchId);
-  watchId = navigator.geolocation.watchPosition(pos=>{
-    const {latitude:lat, longitude:lng} = pos.coords;
-    if(userMarker) userMarker.setLatLng([lat,lng]);
-    else userMarker = L.marker([lat,lng]).addTo(map).bindPopup("موقعي").openPopup();
-  }, err=>{}, {enableHighAccuracy:true, maximumAge:5000, timeout:10000});
-}
-
-/* Role and login flow */
-function openLogin(r){
-  role = r;
-  $("loginTitle").textContent = r==="driver" ? "تسجيل دخول السائق" : "تسجيل دخول الزبون";
-  $("welcomeModal").classList.add("hidden");
-  $("loginModal").classList.remove("hidden");
-  if(!recaptchaVerifier){
-    recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', { size: 'invisible' });
-    recaptchaVerifier.render();
-  }
-}
-function closeLogin(){
-  $("loginModal").classList.add("hidden");
-  $("welcomeModal").classList.remove("hidden");
-}
-function sendVerification(){
-  const phone=$("loginPhone").value.trim();
-  const name=$("loginName").value.trim();
-  const consent=$("loginConsent").checked;
-
-  if(!name){ $("loginStatus").textContent="يرجى إدخال الاسم"; $("loginStatus").className="error"; return; }
-  if(!validateJordanPhone(phone)){ $("loginStatus").textContent="رقم الهاتف غير صحيح (+9627XXXXXXXX)"; $("loginStatus").className="error"; return; }
-  if(!consent){ $("loginStatus").textContent="يجب الموافقة على مشاركة الموقع"; $("loginStatus").className="error"; return; }
-
-  auth.signInWithPhoneNumber(phone, recaptchaVerifier)
-    .then(confirmationResult => {
-      window.confirmationResult = confirmationResult;
-      $("loginStatus").textContent = "تم إرسال رمز التحقق عبر الرسائل القصيرة";
-      $("loginStatus").className="success";
-    })
-    .catch(error => {
-      $("loginStatus").textContent = "خطأ: " + (error && error.message ? error.message : "تعذر إرسال الرمز");
-      $("loginStatus").className="error";
-    });
-}
-function completeLogin(){
-  const code=$("loginCode").value.trim();
-  if(!window.confirmationResult){ $("loginStatus").textContent="أرسل الرمز أولاً"; $("loginStatus").className="error"; return; }
-  window.confirmationResult.confirm(code)
-    .then(result=>{
-      const user = result.user;
-      const name=$("loginName").value.trim();
-      const consent=$("loginConsent").checked;
-
-      currentUser = {uid:user.uid, name, phone:user.phoneNumber, consent, role};
-      localStorage.setItem("currentUser", JSON.stringify(currentUser));
-
-      // Save/merge user profile
-      db.collection("users").doc(user.uid).set(currentUser, {merge:true});
-
-      $("loginModal").classList.add("hidden");
-      $("btnLogout").classList.remove("hidden");
-      $("btnRoleCustomer").classList.remove("hidden");
-      $("btnRoleDriver").classList.remove("hidden");
-      startLocationWatch();
-
-      if(role==="driver"){
-        $("roleSelect").classList.add("hidden");
-        $("driverSetup").classList.remove("hidden");
-        $("customerView").classList.add("hidden");
-        renderDriverRequests();
-      }else{
-        $("roleSelect").classList.add("hidden");
-        $("driverSetup").classList.add("hidden");
-        $("customerView").classList.remove("hidden");
-        subscribeOffers();
-      }
-    })
-    .catch(error=>{
-      $("loginStatus").textContent="رمز التحقق غير صحيح";
-      $("loginStatus").className="error";
-    });
-}
-$("btnLogout").onclick = ()=>{
-  auth.signOut();
-  localStorage.removeItem("currentUser");
-  currentUser=null; window.confirmationResult=null;
-  $("driverSetup").classList.add("hidden");
-  $("customerView").classList.add("hidden");
-  $("roleSelect").classList.remove("hidden");
-  $("btnLogout").classList.add("hidden");
-  $("btnRoleCustomer").classList.add("hidden");
-  $("btnRoleDriver").classList.add("hidden");
-  $("welcomeModal").classList.remove("hidden");
-};
-
-/* Header quick switches */
-$("btnRoleCustomer").onclick=()=>{
-  role="customer";
-  $("driverSetup").classList.add("hidden");
-  $("customerView").classList.remove("hidden");
-  subscribeOffers();
-};
-$("btnRoleDriver").onclick=()=>{
-  role="driver";
-  $("customerView").classList.add("hidden");
-  $("driverSetup").classList.remove("hidden");
-  renderDriverRequests();
-};
-
-/* Image previews */
-$("carPhotos").addEventListener("change", e=>{
-  const preview=$("photoPreview"); preview.innerHTML="";
-  [...e.target.files].slice(0,6).forEach(file=>{
-    const reader=new FileReader();
-    reader.onload=()=>{ const img=document.createElement("img"); img.src=reader.result; preview.appendChild(img); };
-    reader.readAsDataURL(file);
-  });
-});
-
-/* Upload car photos to Firebase Storage */
-async function uploadCarPhotos(files){
-  const urls=[];
-  for(const file of files){
-    const ref = storage.ref(`cars/${currentUser.uid}/${Date.now()}_${file.name}`);
-    await ref.put(file);
-    const url = await ref.getDownloadURL();
-    urls.push(url);
-  }
-  return urls;
-}
-
-/* Save driver profile to Firestore */
-async function saveDriverProfile(){
-  if(!currentUser || !currentUser.uid){ $("drvSaveStatus").textContent="سجّل الدخول أولاً"; $("drvSaveStatus").className="error"; return; }
-
-  const name=$("drvName").value.trim();
-  const phone=$("drvPhone").value.trim();
-  const age=parseInt($("drvAge").value||0,10);
-  const gender=$("drvGender").value;
-  const rating=parseFloat($("drvRating").value||0);
-  const carNumber=$("carNumber").value.trim();
-  const carColor=$("carColor").value.trim();
-  const carBrand=$("carBrand").value.trim();
-  const carModel=$("carModel").value.trim();
-  const consent=$("shareLocConsent").checked;
-
-  if(!name || !validateJordanPhone(phone) || !carNumber){ $("drvSaveStatus").textContent="تحقق من الاسم، الهاتف، ورقم المركبة"; $("drvSaveStatus").className="error"; return; }
-
-  const files = $("carPhotos").files;
-  let photoUrls=[];
-  if(files && files.length){ photoUrls = await uploadCarPhotos(files).catch(()=>[]); }
-
-  const profile = {name, phone, age, gender, rating, carNumber, carColor, carBrand, carModel, photos:photoUrls, consent};
-  await db.collection("drivers").doc(currentUser.uid).set(profile, {merge:true});
-  $("drvSaveStatus").textContent = "تم حفظ الملف بنجاح";
-  $("drvSaveStatus").className = "success";
-}
-
-/* Publish offer to Firestore */
-async function publishOffer(){
-  if(!currentUser){ $("offerStatus").textContent="يرجى تسجيل الدخول"; $("offerStatus").className="error"; return; }
-
-  const from=$("fromRegion").value;
-  const to=$("toRegion").value;
-  const price=parseFloat($("offerPrice").value||0);
-  const seats=parseInt($("offerSeats").value||0,10);
-  const time=$("offerTime").value;
-  const notes=$("offerNotes").value.trim();
-
-  if(!from || !to || price<=0 || seats<=0 || !time){
-    $("offerStatus").textContent="أدخل كل البيانات المطلوبة"; $("offerStatus").className="error"; return;
-  }
-
-  let lat=null,lng=null;
-  if(userMarker){ const ll=userMarker.getLatLng(); lat=ll.lat; lng=ll.lng; }
-
-  // merge driver profile for quick listing
-  const dpSnap = await db.collection("drivers").doc(currentUser.uid).get();
-  const driverProfile = dpSnap.exists ? dpSnap.data() : {name: currentUser.name, phone: currentUser.phone};
-
-  const offer = {
-    driverId: currentUser.uid, from, to, price, seatsLeft: seats, time, notes,
-    driverProfile, lat, lng, createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  // Firebase config
+  const firebaseConfig = {
+    apiKey: "AIzaSyDQtw1wHvarCO9WS3E-HVafkBWEkimnWfI",
+    authDomain: "tawsilati-f175e.firebaseapp.com",
+    projectId: "tawsilati-f175e",
+    storageBucket: "tawsilati-f175e.firebasestorage.app",
+    messagingSenderId: "181685598480",
+    appId: "1:181685598480:web:3f712bf3252b6660dccd95",
+    measurementId: "G-FVY6YCKREP"
   };
+  firebase.initializeApp(firebaseConfig);
+  const auth=firebase.auth();
+  const db=firebase.firestore();
+  const $=id=>document.getElementById(id);
 
-  await db.collection("offers").add(offer);
-  $("offerStatus").textContent="تم نشر العرض بنجاح";
-  $("offerStatus").className="success";
-}
+  let recaptchaVerifier, userMarker, map, selectedThreadId=null;
 
-/* Subscribe to offers (real-time) */
-let offersUnsub = null;
-function subscribeOffers(){
-  if(offersUnsub) offersUnsub();
-  const list=$("offersList");
-  offersUnsub = db.collection("offers").orderBy("createdAt","desc").onSnapshot(snap=>{
-    const fFrom=$("filterFrom").value, fTo=$("filterTo").value;
-    let html="";
-    snap.forEach(doc=>{
-      const o=doc.data(); o.id=doc.id;
-      if((!fFrom || o.from===fFrom) && (!fTo || o.to===fTo)){
-        const dp=o.driverProfile||{};
-        const distanceText = (o.lat!=null && o.lng!=null && userMarker) ? 
-          (haversineKm(userMarker.getLatLng().lat, userMarker.getLatLng().lng, o.lat, o.lng).toFixed(1) + " كم") : "—";
-        html += `
-          <div class="offer">
-            <div class="offer-header">
-              <div><strong>${dp.name||"-"}</strong> • ${dp.carBrand||"-"} ${dp.carModel||"-"} • ${dp.carNumber||"-"}</div>
-              <span class="badge">${o.from} → ${o.to}</span>
-            </div>
-            <div class="tags">
-              <span class="tag">الهاتف: ${dp.phone||"-"}</span>
-              <span class="tag">العمر: ${dp.age||"-"}</span>
-              <span class="tag">الجنس: ${dp.gender||"-"}</span>
-              <span class="tag">التقييم: ${dp.rating||"-"}</span>
-              <span class="tag">السعر: ${fmt(o.price)} د</span>
-              <span class="tag">المقاعد المتاحة: ${o.seatsLeft}</span>
-              <span class="tag">المسافة: ${distanceText}</span>
-              <span class="tag">الانطلاق: ${String(o.time).replace("T"," ")}</span>
-            </div>
-            <div class="muted">${o.notes||""}</div>
-            <div class="offer-actions">
-              <button class="sm accept" onclick="selectOffer('${o.id}', ${o.seatsLeft})">اختيار</button>
-              <button class="sm" onclick="focusOfferOnMap('${o.lat}', '${o.lng}')">عرض على الخريطة</button>
-            </div>
-          </div>
-        `;
-      }
-    });
-    list.innerHTML = html || "<p class='muted'>لا توجد عروض مطابقة حالياً</p>";
-  });
-}
-
-/* Filters */
-function applyFilters(){ subscribeOffers(); }
-function clearFilters(){ $("filterFrom").value=""; $("filterTo").value=""; subscribeOffers(); }
-
-/* Map helpers */
-function focusOfferOnMap(lat, lng){
-  const lt = parseFloat(lat), lg=parseFloat(lng);
-  if(isNaN(lt) || isNaN(lg)){ alert("لا توجد إحداثيات لهذه الرحلة"); return; }
-  const m = L.marker([lt,lg]).addTo(map).bindPopup("موقع السائق").openPopup();
-  map.setView([lt,lg], 14);
-  setTimeout(()=>{ try{ map.removeLayer(m); }catch{} }, 4000);
-}
-
-/* Select offer and book (creates request) */
-async function selectOffer(offerId, seatsLeft){
-  selectedOfferId = offerId;
-  const seatsRequested = parseInt($("lateSeats").value||1,10);
-  const note = $("lateNote").value;
-
-  if(seatsLeft < seatsRequested){ alert("عدد المقاعد المتاح أقل من المطلوب"); return; }
-
-  const offerDoc = await db.collection("offers").doc(offerId).get();
-  if(!offerDoc.exists){ alert("العرض غير موجود"); return; }
-  const o = offerDoc.data();
-
-  // compute distance
-  let distanceKm = null;
-  if(userMarker && o.lat!=null && o.lng!=null){
-    const me=userMarker.getLatLng();
-    distanceKm = haversineKm(me.lat, me.lng, o.lat, o.lng);
+  // Login flow
+  window.onload=()=>{
+    recaptchaVerifier=new firebase.auth.RecaptchaVerifier('recaptcha-container',{size:'invisible'});
+    recaptchaVerifier.render();
+  };
+  function sendVerification(){
+    const phone=$("loginPhone").value.trim();
+    auth.signInWithPhoneNumber(phone,recaptchaVerifier)
+      .then(cr=>{window.confirmationResult=cr;$("loginStatus").textContent="رمز أُرسل";})
+      .catch(err=>{$("loginStatus").textContent="خطأ: "+err.message;});
   }
-
-  const status = (distanceKm!=null && distanceKm>6) ? "pending_driver_review" : "auto_accepted";
-
-  await db.collection("requests").add({
-    offerId, customer: {uid: currentUser.uid, name: currentUser.name, phone: currentUser.phone},
-    seats: seatsRequested, note, status, distanceKm,
-    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-  });
-
-  if(status==="auto_accepted"){
-    await db.collection("offers").doc(offerId).update({seatsLeft: firebase.firestore.FieldValue.increment(-seatsRequested)});
-    alert("تم قبول الحجز تلقائياً (ضمن ٦ كم)");
-    joinChat(offerId);
-  }else{
-    alert("تم إرسال الطلب. السائق سيقرر القبول أو الرفض (أكثر من ٦ كم).");
+  function completeLogin(){
+    const code=$("loginCode").value.trim();
+    window.confirmationResult.confirm(code).then(res=>{
+      localStorage.setItem("currentUser",JSON.stringify({uid:res.user.uid,name:$("loginName").value,phone:res.user.phoneNumber}));
+      $("loginPage").style.display="none";$("homePage").style.display="block";
+      initMap();subscribeOffers();subscribeBlocks();
+    }).catch(()=>{$("loginStatus").textContent="رمز غير صحيح";});
   }
-}
+  $("btnLogout").onclick=()=>{auth.signOut();localStorage.removeItem("currentUser");location.reload();};
 
-/* Driver requests handling */
-async function renderDriverRequests(){
-  if(!currentUser) return;
-  const myOffersSnap = await db.collection("offers").where("driverId","==", currentUser.uid).get();
-  const myOfferIds = myOffersSnap.docs.map(d=>d.id);
-
-  const reqSnap = await db.collection("requests").where("offerId","in", myOfferIds.length?myOfferIds:["none"]).get();
-  const container = $("driverRequests");
-  if(reqSnap.empty){ container.innerHTML="<p class='muted'>لا توجد طلبات حالياً</p>"; return; }
-
-  let html="";
-  for(const doc of reqSnap.docs){
-    const r=doc.data();
-    const oSnap = await db.collection("offers").doc(r.offerId).get();
-    const o = oSnap.data();
-    html += `
-      <div class="offer">
-        <div class="offer-header">
-          <div><strong>طلب جديد</strong> • ${o.from} → ${o.to}</div>
-          <span class="badge">${r.status==="pending_driver_review" ? "بانتظار قرار السائق" : (r.status==="auto_accepted" ? "مقبول تلقائياً" : r.status)}</span>
-        </div>
-        <div class="tags">
-          <span class="tag">الزبون: ${r.customer.name}</span>
-          <span class="tag">مقاعد مطلوبة: ${r.seats}</span>
-          <span class="tag">المسافة: ${r.distanceKm!=null ? r.distanceKm.toFixed(1)+" كم" : "—"}</span>
-          <span class="tag">متبقي: ${o.seatsLeft}</span>
-        </div>
-        <div class="muted">${r.note||""}</div>
-        <div class="offer-actions">
-          ${r.status==="pending_driver_review" ? `
-            <button class="sm accept" onclick="driverAccept('${r.offerId}', ${r.seats}, '${doc.id}')">قبول</button>
-            <button class="sm reject" onclick="driverReject('${doc.id}')">رفض</button>
-          ` : `<button class="sm" onclick="joinChat('${r.offerId}')">فتح المحادثة</button>`}
-        </div>
-      </div>
-    `;
-  }
-  container.innerHTML = html;
-}
-async function driverAccept(offerId, seats, requestId){
-  const oRef = db.collection("offers").doc(offerId);
-  const oSnap = await oRef.get(); if(!oSnap.exists) return;
-  const o = oSnap.data();
-  if(o.seatsLeft<seats){ alert("لا توجد مقاعد كافية"); return; }
-  await oRef.update({seatsLeft: firebase.firestore.FieldValue.increment(-seats)});
-  await db.collection("requests").doc(requestId).update({status:"accepted"});
-  renderDriverRequests();
-  joinChat(offerId);
-}
-async function driverReject(requestId){
-  await db.collection("requests").doc(requestId).update({status:"rejected"});
-  renderDriverRequests();
-}
-
-/* Chat (per-offer) */
-function joinChat(offerId){
-  selectedOfferId = offerId;
-  renderChat();
-}
-let chatUnsub=null;
-function renderChat(){
-  const box=$("chatBox");
-  if(chatUnsub) chatUnsub();
-  if(!selectedOfferId){ box.innerHTML="<p class='muted'>اختر عرضاً وانضم للمجموعة لبدء المحادثة</p>"; return; }
-
-  chatUnsub = db.collection("chats").doc(selectedOfferId).collection("messages")
-    .orderBy("ts","asc").onSnapshot(snap=>{
-      let html="";
-      snap.forEach(doc=>{
-        const m=doc.data();
-        html += `
-          <div class="chat-msg">
-            <div class="chat-meta">${m.name} • ${new Date(m.ts?.toDate?.() || m.ts).toLocaleString('ar-JO')}</div>
-            <div>${m.msg}</div>
-          </div>
-        `;
+  // Map
+  function initMap(){
+    map=L.map("map").setView([31.95,35.91],12);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(map);
+    if(navigator.geolocation){
+      navigator.geolocation.watchPosition(pos=>{
+        const {latitude,longitude}=pos.coords;
+        if(userMarker) userMarker.setLatLng([latitude,longitude]);
+        else userMarker=L.marker([latitude,longitude]).addTo(map).bindPopup("موقعي");
       });
-      box.innerHTML = html || "<p class='muted'>لا توجد رسائل بعد</p>";
-      box.scrollTop = box.scrollHeight;
-    });
-}
-function sendChat(){
-  const msg=$("chatInput").value.trim();
-  if(!msg) return;
-  if(!selectedOfferId){ alert("انضم إلى محادثة عرض أولاً"); return; }
-  db.collection("chats").doc(selectedOfferId).collection("messages").add({
-    name: currentUser?.name || "مستخدم", msg, ts: firebase.firestore.FieldValue.serverTimestamp()
-  });
-  $("chatInput").value="";
-}
-
-/* Restore session */
-(function restore(){
-  const cu = localStorage.getItem("currentUser");
-  if(cu){
-    currentUser = JSON.parse(cu);
-    role = currentUser.role;
-    $("welcomeModal").classList.add("hidden");
-    $("btnLogout").classList.remove("hidden");
-    $("btnRoleCustomer").classList.remove("hidden");
-    $("btnRoleDriver").classList.remove("hidden");
-    startLocationWatch();
-    if(role==="driver"){
-      $("driverSetup").classList.remove("hidden");
-      renderDriverRequests();
-    }else{
-      $("customerView").classList.remove("hidden");
-      subscribeOffers();
     }
   }
-})();
+
+  // Offers (general)
+  function subscribeOffers(){
+    db.collection("offers_general").onSnapshot(snap=>{
+      let html="";snap.forEach(doc=>{const o=doc.data();
+        html+=`<div class="offer"><strong>${o.driverProfile?.name||"-"}</strong> ${o.from}→${o.to} السعر:${o.price}د</div>`;
+      });$("offersList").innerHTML=html||"<p class='muted'>لا توجد عروض</p>";
+    });
+  }
+
+  // Blocks (seat-based)
+  function subscribeBlocks(){
+    db.collection("blocks").onSnapshot(snap=>{
+      let html="";snap.forEach(doc=>{const b=doc.data();
+        html+=`<div class="offer"><strong>${b.driverProfile?.name||"-"}</strong> ${b.from}→${b.to} المقاعد:${b.seatsLeft}</div>`;
+      });$("blocksList").innerHTML=html||"<p class='muted'>لا توجد حجوزات</p>";
+    });
+  }
+
+  // Chat
+  function sendChat(){
+    const msg=$("chatInput").value.trim();if(!msg||!selectedThreadId)return;
+    const cu=JSON.parse(localStorage.getItem("currentUser")||"{}");
+    db.collection("chats").doc(selectedThreadId).collection("messages").add({name:cu.name||"مستخدم",msg,ts:firebase.firestore.FieldValue.serverTimestamp()});
+    $("chatInput").value="";
+  }
 </script>
 </body>
 </html>
