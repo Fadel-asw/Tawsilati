@@ -1,157 +1,899 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>🚗 توصيلاتي</title>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
-  <style>
-    :root{--emerald:#2ecc71;--midnight:#2c3e50;--bg:#ecf0f1;--accent:#e67e22;}
-    body{margin:0;font-family:"Inter",sans-serif;background:var(--bg);direction:rtl}
-    .header{background:var(--midnight);color:#fff;padding:12px;display:flex;justify-content:space-between}
-    .brand{font-weight:bold}
-    .btn{border:none;border-radius:8px;padding:8px 12px;cursor:pointer}
-    .btn.primary{background:var(--emerald);color:#fff}
-    .container{padding:16px}
-    .grid{display:grid;grid-template-columns:1fr 300px;gap:16px}
-    .card{background:#fff;border-radius:12px;padding:16px;box-shadow:0 4px 12px rgba(0,0,0,.1)}
-    .input{margin-bottom:10px;display:flex;flex-direction:column}
-    .chat{border:1px solid #ddd;border-radius:8px;padding:8px;max-height:200px;overflow:auto}
-    #map{height:220px;border-radius:12px}
-    .login-hero{display:flex;align-items:center;justify-content:center;height:100vh;background:linear-gradient(135deg,#2ecc71,#2c3e50)}
-    .login-card{background:#fff;padding:20px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.1)}
-    .muted{color:#6b7280;font-size:14px}
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>توصيلاتي | Tawsilati</title>
+
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  /* Modern Palette */
+  --primary: #6C63FF; /* Modern Purple */
+  --primary-dark: #5a52d5;
+  --primary-light: #e0dfff;
+  --accent: #00D2D3; /* Teal for actions */
+  --dark: #2d3436;
+  --text: #2d3436;
+  --text-light: #636e72;
+  --bg: #f8f9fa;
+  --surface: #ffffff;
+  --danger: #ff7675;
+  --success: #00b894;
+  --border: #dfe6e9;
+  --shadow: 0 4px 20px rgba(0,0,0,0.06);
+  --radius: 16px;
+}
+
+* { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
+
+html, body { height: 100%; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; background: var(--bg); color: var(--text); overflow: hidden; }
+
+/* --- Utility Classes --- */
+.hidden { display: none !important; }
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.justify-center { justify-content: center; }
+.gap-2 { gap: 0.5rem; }
+.gap-4 { gap: 1rem; }
+.w-full { width: 100%; }
+.text-sm { font-size: 0.875rem; }
+.text-xs { font-size: 0.75rem; }
+.text-muted { color: var(--text-light); }
+.text-center { text-align: center; }
+.font-bold { font-weight: 700; }
+
+/* --- Buttons --- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 12px 20px; border-radius: 12px; border: none; cursor: pointer;
+  font-family: inherit; font-weight: 700; transition: all 0.2s ease;
+  font-size: 1rem; width: 100%;
+}
+.btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 10px rgba(108, 99, 255, 0.3); }
+.btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); }
+.btn-secondary { background: white; color: var(--text); border: 1px solid var(--border); }
+.btn-secondary:hover { background: #f1f2f6; }
+.btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
+.btn-outline:hover { background: var(--primary-light); }
+.btn-sm { padding: 8px 14px; font-size: 0.85rem; width: auto; }
+.btn-danger { background: var(--danger); color: white; }
+
+/* --- Inputs --- */
+.input-group { margin-bottom: 1rem; text-align: right; }
+.input-group label { display: block; margin-bottom: 6px; font-weight: 600; color: var(--text); font-size: 0.9rem; }
+.input-field {
+  width: 100%; padding: 12px 16px; border: 2px solid var(--border);
+  border-radius: 12px; font-size: 1rem; background: var(--surface);
+  transition: border-color 0.2s; font-family: inherit;
+}
+.input-field:focus { border-color: var(--primary); }
+
+/* --- Views Container --- */
+#app { height: 100vh; display: flex; flex-direction: column; }
+
+/* --- Login View --- */
+#view-login {
+  flex: 1; display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  padding: 20px; overflow-y: auto;
+}
+.login-card {
+  background: white; width: 100%; max-width: 420px;
+  padding: 40px 30px; border-radius: 24px; box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+  text-align: center; animation: slideUp 0.4s ease-out;
+}
+.role-selector { display: flex; gap: 10px; margin: 20px 0; }
+.role-btn { flex: 1; padding: 15px; border: 2px solid var(--border); border-radius: 16px; cursor: pointer; transition: all 0.2s; }
+.role-btn.active { border-color: var(--primary); background: var(--primary-light); color: var(--primary-dark); }
+.role-btn:hover:not(.active) { border-color: var(--primary); }
+
+/* --- Dashboard View --- */
+#view-dashboard { height: 100%; display: flex; flex-direction: column; }
+header {
+  height: 70px; background: white; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between; padding: 0 24px;
+  flex-shrink: 0; z-index: 100;
+}
+.logo { font-size: 1.5rem; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 8px; }
+
+/* Layout Grid */
+.dashboard-content {
+  flex: 1; display: flex; overflow: hidden; position: relative;
+}
+.sidebar {
+  width: 450px; background: var(--bg); border-left: 1px solid var(--border);
+  display: flex; flex-direction: column; z-index: 10;
+  overflow-y: auto; padding: 20px; scroll-behavior: smooth;
+}
+.map-wrapper {
+  flex: 1; position: relative; background: #e9ecef;
+}
+#map { width: 100%; height: 100%; }
+
+/* Tabs */
+.tabs { display: flex; background: white; padding: 6px; border-radius: 14px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+.tab { flex: 1; padding: 10px; text-align: center; border-radius: 10px; cursor: pointer; font-weight: 600; color: var(--text-light); transition: all 0.2s; }
+.tab.active { background: var(--primary); color: white; shadow: 0 2px 5px rgba(108, 99, 255, 0.2); }
+
+/* Cards */
+.card {
+  background: white; border-radius: 16px; padding: 20px; margin-bottom: 16px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.02); border: 1px solid var(--border);
+}
+.card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.trip-card { position: relative; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; }
+.trip-card:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.08); border-color: var(--primary); }
+
+.badge {
+  padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700;
+}
+.badge-success { background: #e6fffa; color: var(--success); }
+.badge-warning { background: #fff7e6; color: #ffa502; }
+.badge-info { background: #e7f5ff; color: var(--primary); }
+
+/* Chat */
+.chat-panel {
+  position: absolute; bottom: 20px; left: 20px; width: 320px; max-height: 400px;
+  background: white; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+  display: flex; flex-direction: column; overflow: hidden; z-index: 500;
+}
+.chat-header { background: var(--primary); color: white; padding: 12px; font-weight: bold; display: flex; justify-content: space-between; }
+.chat-messages { flex: 1; padding: 12px; overflow-y: auto; background: #fdfdfd; min-height: 150px; }
+.chat-input-area { padding: 10px; border-top: 1px solid var(--border); display: flex; gap: 8px; }
+.chat-msg { margin-bottom: 8px; padding: 8px 12px; border-radius: 12px; max-width: 85%; font-size: 0.9rem; line-height: 1.4; }
+.chat-msg.me { background: var(--primary-light); margin-right: auto; border-bottom-right-radius: 2px; }
+.chat-msg.them { background: #f1f2f6; margin-left: auto; border-bottom-left-radius: 2px; }
+
+/* Animations */
+@keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Mobile Responsive */
+@media (max-width: 900px) {
+  .dashboard-content { flex-direction: column-reverse; }
+  .sidebar { width: 100%; height: 55%; }
+  .map-wrapper { height: 45%; }
+  .chat-panel { width: 90%; left: 5%; bottom: 10px; }
+}
+
+/* Modal */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 1000;
+  display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px);
+}
+.modal-content {
+  background: white; width: 90%; max-width: 500px; padding: 24px; border-radius: 20px;
+  animation: slideUp 0.3s ease; max-height: 90vh; overflow-y: auto;
+}
+</style>
 </head>
 <body>
 
-<!-- LOGIN PAGE -->
-<div id="loginPage" class="login-hero">
-  <div class="login-card">
-    <h2>🚗 توصيلاتي</h2>
-    <p class="muted">أدخل رقمك الأردني للتحقق عبر SMS</p>
-    <div class="input"><label>الاسم الكامل</label><input id="loginName"/></div>
-    <div class="input"><label>رقم الهاتف</label><input id="loginPhone" placeholder="+9627XXXXXXXX"/></div>
-    <div class="input"><label><input type="checkbox" id="loginConsent"/> أوافق على مشاركة موقعي</label></div>
-    <div id="recaptcha-container"></div>
-    <div class="input"><label>رمز التحقق</label><input id="loginCode"/></div>
-    <button class="btn primary" onclick="sendVerification()">إرسال رمز</button>
-    <button class="btn primary" onclick="completeLogin()">إكمال الدخول</button>
-    <p id="loginStatus" class="muted"></p>
-  </div>
-</div>
+<div id="app">
+  
+  <!-- === VIEW 1: LOGIN === -->
+  <div id="view-login">
+    <div class="login-card">
+      <div style="font-size: 3rem; margin-bottom: 10px;">🚗</div>
+      <h1 style="margin: 0; color: var(--primary);">توصيلاتي</h1>
+      <p class="text-muted" style="margin-bottom: 24px;">منصة الربط بين السائقين والزبائن في الأردن</p>
+      
+      <div class="role-selector">
+        <div class="role-btn active" id="roleBtnCustomer" onclick="selectLoginRole('customer')">
+          <div style="font-size:1.5rem">👤</div>
+          <div>زبون</div>
+        </div>
+        <div class="role-btn" id="roleBtnDriver" onclick="selectLoginRole('driver')">
+          <div style="font-size:1.5rem">🚕</div>
+          <div>سائق</div>
+        </div>
+      </div>
 
-<!-- MAIN APP -->
-<div id="homePage" style="display:none">
-  <header class="header">
-    <div class="brand">🚗 توصيلاتي</div>
-    <button id="btnLogout" class="btn">خروج</button>
-  </header>
-  <main class="container grid">
-    <div class="card">
-      <h2>ابحث عن سائق</h2>
-      <div id="offersList"></div>
-      <hr/>
-      <h2>حجز مقاعد (حجب رحلة)</h2>
-      <div id="blocksList"></div>
-      <hr/>
-      <h3>محادثة الرحلة</h3>
-      <div id="chatBox" class="chat"></div>
-      <div class="row">
-        <input id="chatInput" placeholder="اكتب رسالة..."/>
-        <button class="btn primary" onclick="sendChat()">إرسال</button>
+      <div id="loginForm">
+        <div class="input-group">
+          <label>الاسم الكامل</label>
+          <input id="loginName" class="input-field" placeholder="مثال: أحمد محمد">
+        </div>
+        <div class="input-group">
+          <label>رقم الهاتف</label>
+          <input id="loginPhone" class="input-field" placeholder="079 XXXXXXX" type="tel">
+        </div>
+        <div class="input-group" style="text-align: right; font-size: 0.9rem;">
+          <label style="display:inline; font-weight:normal; cursor:pointer;">
+            <input type="checkbox" id="loginConsent"> أوافق على مشاركة موقعي الجغرافي
+          </label>
+        </div>
+        
+        <!-- Recaptcha placeholder -->
+        <div id="recaptcha-container" style="margin-bottom: 1rem; display: flex; justify-content: center;"></div>
+
+        <div id="codeInputArea" class="hidden">
+          <div class="input-group">
+            <label>رمز التحقق (SMS)</label>
+            <input id="loginCode" class="input-field" placeholder="XXXXXX">
+          </div>
+        </div>
+
+        <button id="btnAction" class="btn btn-primary" onclick="handleLoginAction()">إرسال رمز التحقق</button>
+        <p id="loginStatus" class="text-sm" style="margin-top:10px; min-height: 20px;"></p>
       </div>
     </div>
-    <div class="card">
-      <h3>الخريطة</h3>
-      <div id="map"></div>
+  </div>
+
+  <!-- === VIEW 2: DASHBOARD === -->
+  <div id="view-dashboard" class="hidden">
+    <header>
+      <div class="logo">
+        <span>🚗</span> توصيلاتي
+      </div>
+      <div class="flex items-center gap-4">
+        <span id="userNameDisplay" class="font-bold text-muted"></span>
+        <button class="btn btn-sm btn-secondary" onclick="logout()">خروج</button>
+      </div>
+    </header>
+
+    <div class="dashboard-content">
+      <!-- Sidebar -->
+      <div class="sidebar">
+        
+        <!-- CUSTOMER INTERFACE -->
+        <div id="customerInterface" class="hidden">
+          <div class="tabs">
+            <div class="tab active" id="tabBook" onclick="switchCustomerTab('book')">حجز مقعد</div>
+            <div class="tab" id="tabBlock" onclick="switchCustomerTab('block')">طلب رحلة (Block)</div>
+          </div>
+
+          <!-- Tab: Book a Seat -->
+          <div id="contentBook">
+            <div class="card">
+              <h3 style="margin:0 0 10px;">تصفية العروض</h3>
+              <div class="flex gap-2">
+                <select id="filterFrom" class="input-field"><option value="">الكل (من)</option></select>
+                <select id="filterTo" class="input-field"><option value="">الكل (إلى)</option></select>
+              </div>
+              <button class="btn btn-secondary btn-sm" style="margin-top:10px;" onclick="applyFilters()">بحث</button>
+            </div>
+            <div id="offersList"></div>
+          </div>
+
+          <!-- Tab: Block a Trip -->
+          <div id="contentBlock" class="hidden">
+            <div class="card" style="border-color: var(--primary);">
+              <h3 style="color: var(--primary);">طلب حجز كامل (Block)</h3>
+              <p class="text-muted text-sm">هل تريد استئجار السيارة بالكامل؟ حدد التفاصيل وسيصل طلبك للسائقين.</p>
+              
+              <div class="input-group">
+                <label>من منطقة</label>
+                <select id="blockFrom" class="input-field"></select>
+              </div>
+              <div class="input-group">
+                <label>إلى منطقة</label>
+                <select id="blockTo" class="input-field"></select>
+              </div>
+              <div class="flex gap-2">
+                <div class="input-group w-full">
+                  <label>السعر المقترح (د.أ)</label>
+                  <input id="blockPrice" type="number" class="input-field" placeholder="0.00">
+                </div>
+                <div class="input-group w-full">
+                  <label>عدد المقاعد المحجوزة</label>
+                  <input id="blockSeats" type="number" class="input-field" placeholder="4" min="1">
+                </div>
+              </div>
+              <div class="input-group">
+                <label>وقت الانطلاق</label>
+                <input id="blockTime" type="datetime-local" class="input-field">
+              </div>
+              <button class="btn btn-primary" onclick="publishBlockRequest()">نشر طلب الحجز</button>
+            </div>
+            
+            <h3 style="margin: 20px 0 10px;">طلباتي الحالية</h3>
+            <div id="myBlockRequests"></div>
+          </div>
+        </div>
+
+        <!-- DRIVER INTERFACE -->
+        <div id="driverInterface" class="hidden">
+          <div class="card">
+            <h3>ملفي الشخصي</h3>
+            <div class="flex gap-2">
+              <button class="btn btn-secondary btn-sm w-full" onclick="showDriverProfile()">تعديل البيانات</button>
+              <button class="btn btn-primary btn-sm w-full" onclick="showPublishForm()">+ نشر رحلة</button>
+            </div>
+          </div>
+
+          <div id="driverFormsArea" class="hidden">
+            <!-- Publish Form -->
+            <div id="formPublish" class="card hidden">
+              <h3>نشر رحلة جديدة</h3>
+              <div class="flex gap-2">
+                <select id="pubFrom" class="input-field"><option value="">من</option></select>
+                <select id="pubTo" class="input-field"><option value="">إلى</option></select>
+              </div>
+              <div class="flex gap-2" style="margin-top:10px">
+                <input id="pubPrice" type="number" placeholder="السعر" class="input-field">
+                <input id="pubSeats" type="number" placeholder="المقاعد" class="input-field">
+              </div>
+              <input id="pubTime" type="datetime-local" class="input-field" style="margin-top:10px">
+              <button class="btn btn-primary" style="margin-top:10px" onclick="publishOffer()">نشر</button>
+              <button class="btn btn-secondary btn-sm" style="margin-top:10px" onclick="closeDriverForms()">إلغاء</button>
+            </div>
+
+            <!-- Profile Form -->
+            <div id="formProfile" class="card hidden">
+              <h3>بيانات المركبة</h3>
+              <div class="input-group"><label>رقم اللوحة</label><input id="profPlate" class="input-field"></div>
+              <div class="input-group"><label>نوع السيارة</label><input id="profCar" class="input-field" placeholder="تويوتا كامري"></div>
+              <div class="input-group"><label>اللون</label><input id="profColor" class="input-field"></div>
+              <div class="input-group"><label>صور (اختياري)</label><input type="file" id="profPhotos" multiple class="input-field"></div>
+              <button class="btn btn-primary" style="margin-top:10px" onclick="saveDriverProfile()">حفظ</button>
+              <button class="btn btn-secondary btn-sm" style="margin-top:10px" onclick="closeDriverForms()">إلغاء</button>
+            </div>
+          </div>
+
+          <h3 style="margin: 20px 0 10px;">الطلبات الواردة</h3>
+          <div id="driverRequestsList"></div>
+        </div>
+
+      </div> <!-- End Sidebar -->
+
+      <!-- Map Area -->
+      <div class="map-wrapper">
+        <div id="map"></div>
+        
+        <!-- Floating Toggle for Map on Mobile if needed, but keeping simple for now -->
+      </div>
+
+      <!-- Chat Widget -->
+      <div id="chatWidget" class="chat-panel hidden">
+        <div class="chat-header">
+          <span id="chatTitle">المحادثة</span>
+          <span style="cursor:pointer" onclick="toggleChat()">✕</span>
+        </div>
+        <div id="chatMessages" class="chat-messages"></div>
+        <div class="chat-input-area">
+          <input id="chatInput" class="input-field" placeholder="اكتب رسالة..." style="padding:8px">
+          <button class="btn btn-primary btn-sm" onclick="sendChat()">➤</button>
+        </div>
+      </div>
+
     </div>
-  </main>
+  </div>
+
 </div>
 
-<!-- Scripts -->
+<!-- JS Libraries -->
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-storage-compat.js"></script>
 
 <script>
-  // Firebase config
-  const firebaseConfig = {
-    apiKey: "AIzaSyDQtw1wHvarCO9WS3E-HVafkBWEkimnWfI",
-    authDomain: "tawsilati-f175e.firebaseapp.com",
-    projectId: "tawsilati-f175e",
-    storageBucket: "tawsilati-f175e.firebasestorage.app",
-    messagingSenderId: "181685598480",
-    appId: "1:181685598480:web:3f712bf3252b6660dccd95",
-    measurementId: "G-FVY6YCKREP"
-  };
-  firebase.initializeApp(firebaseConfig);
-  const auth=firebase.auth();
-  const db=firebase.firestore();
-  const $=id=>document.getElementById(id);
+// === CONFIGURATION ===
+const firebaseConfig = {
+  apiKey: "AIzaSyDQtw1wHvarCO9WS3E-HVafkBWEkimnWfI",
+  authDomain: "tawsilati-f175e.firebaseapp.com",
+  projectId: "tawsilati-f175e",
+  storageBucket: "tawsilati-f175e.firebasestorage.app",
+  messagingSenderId: "181685598480",
+  appId: "1:181685598480:web:3f712bf3252b6660dccd95",
+  measurementId: "G-FVY6YCKREP"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+const storage = firebase.storage();
 
-  let recaptchaVerifier, userMarker, map, selectedThreadId=null;
+// === STATE & DATA ===
+const REGIONS = ["اربدّ","الكورة","الحي الشمالي","الحي الجنوبي","كفر يوبا","الطيبة","عمان","الزرقاء","العقبة","المفرق","جرش","عجلون","السلط","مادبا","الكرك","معان"];
 
-  // Login flow
-  window.onload=()=>{
-    recaptchaVerifier=new firebase.auth.RecaptchaVerifier('recaptcha-container',{size:'invisible'});
-    recaptchaVerifier.render();
-  };
-  function sendVerification(){
-    const phone=$("loginPhone").value.trim();
-    auth.signInWithPhoneNumber(phone,recaptchaVerifier)
-      .then(cr=>{window.confirmationResult=cr;$("loginStatus").textContent="رمز أُرسل";})
-      .catch(err=>{$("loginStatus").textContent="خطأ: "+err.message;});
-  }
-  function completeLogin(){
-    const code=$("loginCode").value.trim();
-    window.confirmationResult.confirm(code).then(res=>{
-      localStorage.setItem("currentUser",JSON.stringify({uid:res.user.uid,name:$("loginName").value,phone:res.user.phoneNumber}));
-      $("loginPage").style.display="none";$("homePage").style.display="block";
-      initMap();subscribeOffers();subscribeBlocks();
-    }).catch(()=>{$("loginStatus").textContent="رمز غير صحيح";});
-  }
-  $("btnLogout").onclick=()=>{auth.signOut();localStorage.removeItem("currentUser");location.reload();};
+let currentUser = null;
+let currentRole = 'customer'; // 'customer' or 'driver'
+let map, userMarker, watchId;
+let selectedOfferId = null; // For chat context
+let recaptchaVerifier = null;
+let confirmationResult = null;
 
-  // Map
-  function initMap(){
-    map=L.map("map").setView([31.95,35.91],12);
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(map);
-    if(navigator.geolocation){
-      navigator.geolocation.watchPosition(pos=>{
-        const {latitude,longitude}=pos.coords;
-        if(userMarker) userMarker.setLatLng([latitude,longitude]);
-        else userMarker=L.marker([latitude,longitude]).addTo(map).bindPopup("موقعي");
-      });
+// === DOM ELEMENTS ===
+const $ = id => document.getElementById(id);
+
+// === INITIALIZATION ===
+(function init(){
+  populateSelects();
+  // Check auth state
+  auth.onAuthStateChanged(user => {
+    if (user) {
+      // User logged in, check if we have role stored
+      // In a real app, fetch role from Firestore. Here we assume local or prompt.
+      // But since we forced role selection in new login flow:
+      currentUser = user;
+      $('userNameDisplay').textContent = user.displayName || user.phoneNumber;
+      showDashboard();
+    } else {
+      showLogin();
     }
-  }
+  });
+})();
 
-  // Offers (general)
-  function subscribeOffers(){
-    db.collection("offers_general").onSnapshot(snap=>{
-      let html="";snap.forEach(doc=>{const o=doc.data();
-        html+=`<div class="offer"><strong>${o.driverProfile?.name||"-"}</strong> ${o.from}→${o.to} السعر:${o.price}د</div>`;
-      });$("offersList").innerHTML=html||"<p class='muted'>لا توجد عروض</p>";
+function populateSelects(){
+  const ids = ['filterFrom','filterTo','blockFrom','blockTo','pubFrom','pubTo'];
+  ids.forEach(id => {
+    const el = $(id);
+    if(!el) return;
+    const currentVal = el.value;
+    el.innerHTML = `<option value="">${id.includes('filter')?'الكل':'اختر المنطقة'}</option>`;
+    REGIONS.forEach(r => {
+      const opt = document.createElement('option');
+      opt.value = r; opt.textContent = r;
+      el.appendChild(opt);
     });
-  }
+    el.value = currentVal;
+  });
+}
 
-  // Blocks (seat-based)
-  function subscribeBlocks(){
-    db.collection("blocks").onSnapshot(snap=>{
-      let html="";snap.forEach(doc=>{const b=doc.data();
-        html+=`<div class="offer"><strong>${b.driverProfile?.name||"-"}</strong> ${b.from}→${b.to} المقاعد:${b.seatsLeft}</div>`;
-      });$("blocksList").innerHTML=html||"<p class='muted'>لا توجد حجوزات</p>";
+// === MAP ===
+function initMap() {
+  if(map) return;
+  map = L.map("map").setView([31.95, 35.91], 8);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution: "© OpenStreetMap"
+  }).addTo(map);
+  
+  // Resize observer for the map wrapper to handle responsive resizing
+  new ResizeObserver(() => map.invalidateSize()).observe($('map-wrapper'));
+}
+
+function startLocationTracking(){
+  if(!navigator.geolocation) return;
+  if(watchId) navigator.geolocation.clearWatch(watchId);
+  watchId = navigator.geolocation.watchPosition(pos => {
+    const {latitude:lat, longitude:lng} = pos.coords;
+    if(userMarker) userMarker.setLatLng([lat,lng]);
+    else userMarker = L.marker([lat,lng], {icon: getIcon('user')}).addTo(map).bindPopup("موقعي");
+    
+    // Update user location in DB periodically could happen here
+    // db.collection('users').doc(currentUser.uid).update({loc: new firebase.firestore.GeoPoint(lat, lng)});
+  }, err => console.log(err), {enableHighAccuracy:true});
+}
+
+function getIcon(type){
+  // Simple logic to return different markers if needed
+  return new L.Icon.Default();
+}
+
+// === AUTH & NAVIGATION FLOW ===
+
+function showLogin(){
+  $('view-login').classList.remove('hidden');
+  $('view-dashboard').classList.add('hidden');
+  $('app').style.background = "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)";
+}
+
+function showDashboard(){
+  $('view-login').classList.add('hidden');
+  $('view-dashboard').classList.remove('hidden');
+  $('app').style.background = "var(--bg)";
+  initMap();
+  startLocationTracking();
+
+  // Based on role selected during login (stored in variable for session)
+  if(currentRole === 'driver'){
+    $('customerInterface').classList.add('hidden');
+    $('driverInterface').classList.remove('hidden');
+    subscribeDriverRequests();
+  } else {
+    $('customerInterface').classList.remove('hidden');
+    $('driverInterface').classList.add('hidden');
+    subscribeOffers(); // Load offers
+    loadMyBlockRequests();
+  }
+}
+
+function selectLoginRole(role){
+  currentRole = role;
+  $('roleBtnCustomer').classList.toggle('active', role === 'customer');
+  $('roleBtnDriver').classList.toggle('active', role === 'driver');
+}
+
+async function handleLoginAction(){
+  const phone = $('loginPhone').value.trim();
+  const name = $('loginName').value.trim();
+  const status = $('loginStatus');
+  const consent = $('loginConsent').checked;
+
+  status.textContent = '';
+  status.className = '';
+
+  // Step 1: Send Code
+  if (!confirmationResult) {
+    if(!name || !phone) { status.textContent = "يرجى ملء الاسم ورقم الهاتف"; status.style.color="red"; return; }
+    if(!consent) { status.textContent = "يجب الموافقة على المشاركة"; status.style.color="red"; return; }
+
+    if(!recaptchaVerifier){
+       recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', { size: 'invisible' });
+       await recaptchaVerifier.render();
+    }
+
+    auth.signInWithPhoneNumber(phone, recaptchaVerifier)
+      .then(result => {
+        confirmationResult = result;
+        $('codeInputArea').classList.remove('hidden');
+        $('btnAction').textContent = "تسجيل الدخول";
+        status.textContent = "تم إرسال الرمز";
+        status.style.color = "green";
+      })
+      .catch(err => {
+        status.textContent = "خطأ في الإرسال: " + err.message;
+        status.style.color = "red";
+      });
+  } 
+  // Step 2: Verify Code
+  else {
+    const code = $('loginCode').value.trim();
+    if(!code) return;
+
+    confirmationResult.confirm(code)
+      .then(result => {
+        const user = result.user;
+        // Update Profile
+        await db.collection('users').doc(user.uid).set({
+          name: name,
+          phone: phone,
+          role: currentRole,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, {merge: true});
+        
+        showDashboard();
+      })
+      .catch(err => {
+        status.textContent = "الرمز غير صحيح";
+        status.style.color = "red";
+      });
+  }
+}
+
+function logout(){
+  if(confirm("هل أنت متأكد من تسجيل الخروج؟")){
+    auth.signOut();
+    window.location.reload();
+  }
+}
+
+// === CUSTOMER LOGIC ===
+
+function switchCustomerTab(tab){
+  $('tabBook').classList.toggle('active', tab === 'book');
+  $('tabBlock').classList.toggle('active', tab === 'block');
+  $('contentBook').classList.toggle('hidden', tab !== 'book');
+  $('contentBlock').classList.toggle('hidden', tab !== 'block');
+}
+
+// 1. Booking (Standard)
+let offersUnsub = null;
+function subscribeOffers(){
+  if(offersUnsub) offersUnsub();
+  const list = $('offersList');
+  const fFrom = $('filterFrom').value;
+  const fTo = $('filterTo').value;
+
+  // Only query if filters are set, otherwise show recent
+  let q = db.collection('offers').orderBy('createdAt', 'desc').limit(20);
+  
+  offersUnsub = q.onSnapshot(snap => {
+    let html = '';
+    snap.forEach(doc => {
+      const d = doc.data();
+      d.id = doc.id;
+      
+      if(fFrom && d.from !== fFrom) return;
+      if(fTo && d.to !== fTo) return;
+
+      // Driver info
+      const drvName = d.driverProfile?.name || "سائق";
+      const carInfo = d.driverProfile?.carModel ? d.driverProfile.carModel + " " + (d.driverProfile?.carColor||"") : "سيارة";
+      
+      html += `
+        <div class="card trip-card">
+          <div class="card-header">
+            <div>
+              <div class="font-bold">${d.from} <span style="color:var(--text-light)">←</span> ${d.to}</div>
+              <div class="text-xs text-muted">${carInfo}</div>
+            </div>
+            <div class="font-bold text-primary">${d.price} د.أ</div>
+          </div>
+          <div class="flex justify-between items-center text-sm text-muted">
+             <span>🕒 ${new Date(d.time).toLocaleTimeString('ar-JO', {hour:'2-digit', minute:'2-digit'})}</span>
+             <span>💺 ${d.seatsLeft} مقعد</span>
+             <span>⭐ ${d.driverProfile?.rating || '5.0'}</span>
+          </div>
+          <div class="flex gap-2" style="margin-top:15px">
+             <button class="btn btn-sm btn-outline w-full" onclick="requestRide('${d.id}', ${d.seatsLeft}, false)">حجز مقعد</button>
+             <button class="btn btn-sm btn-secondary" onclick="focusMap(${d.lat}, ${d.lng})">📍</button>
+          </div>
+        </div>
+      `;
     });
+    list.innerHTML = html || '<div class="text-center text-muted" style="padding:20px">لا توجد رحلات متاحة حالياً</div>';
+  });
+}
+
+function applyFilters(){ subscribeOffers(); }
+
+// 2. Blocking (Custom Request)
+function publishBlockRequest(){
+  const from = $('blockFrom').value;
+  const to = $('blockTo').value;
+  const price = $('blockPrice').value;
+  const seats = $('blockSeats').value; // "Number of seats to be blocked" as requested
+  const time = $('blockTime').value;
+
+  if(!from || !to || !price || !seats || !time){
+    alert("يرجى ملء جميع الحقول"); return;
   }
 
-  // Chat
-  function sendChat(){
-    const msg=$("chatInput").value.trim();if(!msg||!selectedThreadId)return;
-    const cu=JSON.parse(localStorage.getItem("currentUser")||"{}");
-    db.collection("chats").doc(selectedThreadId).collection("messages").add({name:cu.name||"مستخدم",msg,ts:firebase.firestore.FieldValue.serverTimestamp()});
-    $("chatInput").value="";
+  db.collection('block_requests').add({
+    customerId: currentUser.uid,
+    customerName: currentUser.displayName || $('loginName').value,
+    customerPhone: currentUser.phoneNumber,
+    from, to, price, seats, time,
+    status: 'pending',
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  }).then(() => {
+    alert("تم نشر طلب الحجز الكامل بنجاح");
+    $('blockPrice').value = '';
+  });
+}
+
+function loadMyBlockRequests(){
+  db.collection('block_requests').where('customerId', '==', currentUser.uid)
+    .orderBy('createdAt', 'desc')
+    .onSnapshot(snap => {
+      const container = $('myBlockRequests');
+      if(snap.empty){ container.innerHTML = '<p class="text-muted text-sm">لا توجد طلبات</p>'; return; }
+      
+      let html = '';
+      snap.forEach(doc => {
+        const d = doc.data();
+        let badgeClass = d.status === 'accepted' ? 'badge-success' : (d.status === 'pending' ? 'badge-warning' : '');
+        let statusText = d.status === 'accepted' ? 'تم القبول' : (d.status === 'pending' ? 'في الانتظار' : d.status);
+        
+        html += `
+          <div class="card" style="padding:15px;">
+            <div class="flex justify-between">
+               <strong>${d.from} → ${d.to}</strong>
+               <span class="badge ${badgeClass}">${statusText}</span>
+            </div>
+            <div class="text-sm text-muted">${d.seats} مقاعد • ${d.price} د.أ</div>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+    });
+}
+
+async function requestRide(offerId, seatsLeft, isBlock){
+  if(!currentUser) return alert("سجل دخولك أولاً");
+  
+  // Simple prompt for seats if standard booking
+  let reqSeats = 1;
+  let note = "";
+  
+  if(!isBlock){
+    reqSeats = prompt("كم عدد المقاعد؟", "1");
+    if(!reqSeats) return;
+    reqSeats = parseInt(reqSeats);
   }
+
+  // Add request
+  await db.collection('requests').add({
+    offerId,
+    customer: {
+      uid: currentUser.uid,
+      name: currentUser.displayName || "مستخدم",
+      phone: currentUser.phoneNumber
+    },
+    seats: reqSeats,
+    note: note,
+    status: 'pending',
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  });
+
+  alert("تم إرسال الطلب للسائق.");
+  
+  // Auto open chat context
+  openChat(offerId);
+}
+
+// === DRIVER LOGIC ===
+
+function closeDriverForms(){
+  $('driverFormsArea').classList.add('hidden');
+}
+function showPublishForm(){
+  $('driverFormsArea').classList.remove('hidden');
+  $('formPublish').classList.remove('hidden');
+  $('formProfile').classList.add('hidden');
+}
+function showDriverProfile(){
+  $('driverFormsArea').classList.remove('hidden');
+  $('formProfile').classList.remove('hidden');
+  $('formPublish').classList.add('hidden');
+}
+
+async function publishOffer(){
+  const from = $('pubFrom').value;
+  const to = $('pubTo').value;
+  const price = parseFloat($('pubPrice').value);
+  const seats = parseInt($('pubSeats').value);
+  const time = $('pubTime').value;
+
+  if(!from || !to || !price || !seats || !time){
+    alert("أكمل البيانات"); return;
+  }
+
+  // Get driver profile
+  const profSnap = await db.collection('users').doc(currentUser.uid).get();
+  const prof = profSnap.exists ? profSnap.data() : {};
+
+  await db.collection('offers').add({
+    driverId: currentUser.uid,
+    from, to, price, seatsLeft: seats, time,
+    driverProfile: prof, // contains car info if saved
+    lat: 31.95, lng: 35.91, // Default to Amman for demo, should be real loc
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  });
+
+  alert("تم النشر");
+  closeDriverForms();
+}
+
+async function saveDriverProfile(){
+  const plate = $('profPlate').value;
+  const car = $('profCar').value;
+  const color = $('profColor').value;
+
+  await db.collection('users').doc(currentUser.uid).update({
+    plate, carModel: car, carColor: color
+  });
+
+  alert("تم الحفظ");
+  closeDriverForms();
+}
+
+function subscribeDriverRequests(){
+  // Listen for normal ride requests on my offers
+  // AND block requests nearby
+  
+  // 1. Normal Requests
+  db.collection('requests').where('status', '==', 'pending')
+    .onSnapshot(snap => {
+      renderRequests(snap, 'driverRequestsList', 'normal');
+    });
+    
+  // 2. Block Requests (Filtering by region would happen server-side usually, 
+  // here we fetch all for demo and filter client side or just show all recent)
+  db.collection('block_requests').where('status', '==', 'pending')
+    .orderBy('createdAt', 'desc')
+    .onSnapshot(snap => {
+      renderRequests(snap, 'driverRequestsList', 'block');
+    });
+}
+
+function renderRequests(snap, containerId, type){
+  const container = $(containerId);
+  // In a real app, clear container and rebuild mixed list. 
+  // For simplicity, we just append new ones or rebuild completely based on combined data
+  // Here is a simplified renderer assuming we call it separately.
+  
+  // NOTE: This is a simplified renderer. In production, merge two streams.
+  if(type === 'normal'){
+     // Logic for normal ride requests
+     let html = '';
+     snap.forEach(doc => {
+       const r = doc.data();
+       html += `
+         <div class="card" style="padding:12px; border-right: 4px solid var(--primary)">
+           <div class="font-bold">طلب حجز (${r.seats} مقاعد)</div>
+           <div class="text-sm text-muted">الزبون: ${r.customer.name}</div>
+           <div class="flex gap-2" style="margin-top:8px">
+             <button class="btn btn-sm btn-success" style="background:var(--success);color:white;border:none;border-radius:8px" onclick="acceptRequest('${doc.id}', '${r.offerId}')">قبول</button>
+             <button class="btn btn-sm btn-danger" style="background:var(--danger);color:white;border:none;border-radius:8px" onclick="rejectRequest('${doc.id}')">رفض</button>
+           </div>
+         </div>
+       `;
+     });
+     if(html) container.innerHTML = html + container.innerHTML; // Prepend
+  } else if (type === 'block') {
+     let html = '';
+     snap.forEach(doc => {
+       const r = doc.data();
+       html += `
+         <div class="card" style="padding:12px; border-right: 4px solid var(--accent)">
+           <div class="font-bold text-primary">طلب حجز كامل (Block)</div>
+           <div>${r.from} → ${r.to}</div>
+           <div class="flex justify-between text-sm">
+             <span>المقاعد: ${r.seats}</span>
+             <span>السعر: ${r.price}</span>
+           </div>
+           <div class="flex gap-2" style="margin-top:8px">
+             <button class="btn btn-sm" style="background:var(--accent);color:white;border:none;border-radius:8px" onclick="acceptBlock('${doc.id}')">موافقة</button>
+           </div>
+         </div>
+       `;
+     });
+     if(html) container.innerHTML = html + container.innerHTML;
+  }
+}
+
+async function acceptRequest(reqId, offerId){
+  await db.collection('requests').doc(reqId).update({status: 'accepted'});
+  await db.collection('offers').doc(offerId).update({
+    seatsLeft: firebase.firestore.FieldValue.increment(-1) // Simplified decrement
+  });
+  openChat(offerId);
+  // Re-render handled by snapshot listener ideally, here we remove manually for instant feedback
+  event.target.closest('.card').remove();
+}
+
+function rejectRequest(reqId){
+  db.collection('requests').doc(reqId).update({status: 'rejected'});
+  event.target.closest('.card').remove();
+}
+
+// === CHAT ===
+function openChat(offerId){
+  selectedOfferId = offerId;
+  $('chatWidget').classList.remove('hidden');
+  $('chatTitle').textContent = "محادثة الرحلة";
+  
+  db.collection('chats').doc(offerId).collection('messages')
+    .orderBy('ts', 'asc')
+    .onSnapshot(snap => {
+      const box = $('chatMessages');
+      box.innerHTML = '';
+      snap.forEach(doc => {
+        const m = doc.data();
+        const isMe = m.senderId === currentUser.uid;
+        const div = document.createElement('div');
+        div.className = `chat-msg ${isMe ? 'me' : 'them'}`;
+        div.textContent = m.text;
+        box.appendChild(div);
+      });
+      box.scrollTop = box.scrollHeight;
+    });
+}
+
+function toggleChat(){
+  $('chatWidget').classList.add('hidden');
+}
+
+function sendChat(){
+  const txt = $('chatInput').value.trim();
+  if(!txt || !selectedOfferId) return;
+  
+  db.collection('chats').doc(selectedOfferId).collection('messages').add({
+    senderId: currentUser.uid,
+    senderName: currentUser.displayName || "أنا",
+    text: txt,
+    ts: firebase.firestore.FieldValue.serverTimestamp()
+  });
+  
+  $('chatInput').value = '';
+}
+
+function focusMap(lat, lng){
+  map.setView([lat, lng], 12);
+  L.popup().setLatLng([lat, lng]).setContent("موقع الرحلة").openOn(map);
+}
+
 </script>
 </body>
 </html>
